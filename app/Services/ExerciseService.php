@@ -20,13 +20,14 @@ class ExerciseService
 
     public function create(array $data): Exercise
     {
-        return Exercise::create($data);
+        $exercise= Exercise::create($data);
+        return $exercise->load('category');
     }
 
     public function update(Exercise $exercise, array $data): Exercise
     {
         $exercise->update($data);
-        return $exercise->fresh();
+        return $exercise->fresh()->load('category');
     }
 
     public function delete(Exercise $exercise): void

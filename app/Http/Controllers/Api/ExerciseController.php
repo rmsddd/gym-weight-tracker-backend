@@ -11,7 +11,7 @@ use App\Services\ExerciseService;
 
 class ExerciseController extends Controller
 {
-    public function __construct(private ExerciseService $service) {}
+    public function __construct(protected ExerciseService $service) {}
 
     public function index()
     {
