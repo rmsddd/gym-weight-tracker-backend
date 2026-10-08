@@ -10,22 +10,19 @@ class CategorySeeder extends Seeder
     public function run(): void
     {
         $categories = [
-            'Piept',
-            'Spate',
-            'Umeri',
-            'Trapez',
+            'Chest',
+            'Back',
+            'Shoulders',
+            'Traps',
             'Biceps',
             'Triceps',
-            'Antebrațe',
-            'Abdomen',
-            'Lombar',
-            'Picioare',
-            'Fesieri',
-            'Gambe',
+            'Forearms',
+            'Abs',
+            'Legs',
         ];
 
         foreach ($categories as $category) {
-            Category::create(['name' => $category]);
+            Category::firstOrCreate(['name' => $category]);
         }
     }
 }

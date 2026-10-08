@@ -12,6 +12,7 @@ class UpdateWorkoutRequest extends FormRequest
             'name' => 'nullable|string|max:255',
             'date' => 'sometimes|required|date',
             'note' => 'nullable|string',
+            'duration_minutes' => 'nullable|integer|min:0',
         ];
     }
 

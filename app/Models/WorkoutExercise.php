@@ -25,4 +25,10 @@ class WorkoutExercise extends Model
     {
         return $this->hasMany(WorkoutSet::class);
     }
+
+    // Scoped route bindings resolve `workoutSet` through the `sets` relation
+    protected function childRouteBindingRelationshipName($childType)
+    {
+        return $childType === 'workoutSet' ? 'sets' : parent::childRouteBindingRelationshipName($childType);
+    }
 }

@@ -13,12 +13,17 @@ class Workout extends Model
         'name',
         'date',
         'note',
+        'duration_minutes',
+        'started_at',
+        'finished_at',
     ];
 
     protected function casts(): array
     {
         return [
             'date' => 'date',
+            'started_at' => 'datetime',
+            'finished_at' => 'datetime',
         ];
     }
 

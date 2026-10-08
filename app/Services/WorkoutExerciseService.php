@@ -10,7 +10,7 @@ class WorkoutExerciseService
 {
     public function getAllForWorkout(Workout $workout): Collection
     {
-        return $workout->workoutExercises()->with('exercise')->get();
+        return $workout->workoutExercises()->with(['exercise.category', 'sets'])->get();
     }
 
     public function create(Workout $workout, array $data): WorkoutExercise

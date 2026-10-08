@@ -14,6 +14,9 @@ class WorkoutResource extends JsonResource
             "name"=>$this->name,
             "date"=>$this->date,
             "note"=>$this->note,
+            "duration_minutes"=>$this->duration_minutes,
+            "started_at"=>$this->started_at?->toIso8601String(),
+            "finished_at"=>$this->finished_at?->toIso8601String(),
         ];
     }
 }

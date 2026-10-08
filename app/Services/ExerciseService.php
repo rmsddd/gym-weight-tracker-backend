@@ -8,9 +8,9 @@ use Illuminate\Support\Collection;
 class ExerciseService
 {
 
-    public function getAll(): Collection
+    public function getAll(int $userId): Collection
     {
-        return Exercise::with('category')->get();
+        return Exercise::visibleTo($userId)->with('category')->get();
     }
 
     public function findById(int $id): Exercise

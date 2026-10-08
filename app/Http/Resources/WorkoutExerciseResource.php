@@ -13,6 +13,7 @@ class WorkoutExerciseResource extends JsonResource
             'id' => $this->id,
             'workout_id' => $this->workout_id,
             'exercise' => new ExerciseResource($this->whenLoaded('exercise')),
+            'sets' => WorkoutSetResource::collection($this->whenLoaded('sets')),
         ];
     }
 }

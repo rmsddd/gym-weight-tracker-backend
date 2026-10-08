@@ -7,16 +7,23 @@ use App\Http\Requests\RegisterRequest;
 use App\Http\Requests\LoginRequest;
 use App\Http\Traits\ApiResponse;
 use App\Models\User;
+use App\Services\AuthService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
+use Laravel\Sanctum\PersonalAccessToken;
 
 class AuthController extends Controller
 {
     use ApiResponse;
 
-    public function register(RegisterRequest $request)
+    public function __construct(
+        protected AuthService $service
+    ) {}
+
+    public function register(RegisterRequest $request): JsonResponse
     {
         $user = User::create([
             'name' => $request->validated('name'),
@@ -24,36 +31,96 @@ class AuthController extends Controller
             'password' => Hash::make($request->validated('password')),
         ]);
 
-        Auth::login($user);
-        $request->session()->regenerate();
+        $tokens = $this->service->generateTokens($user);
 
-        return $this->success([
-            'user' => $user,
-        ], 'Cont creat cu succes.', 201);
+        return $this->sendResponseWithTokens(
+            $tokens,
+            ['user' => $user],
+            201
+        );
     }
 
-    public function login(LoginRequest $request)
+    public function login(LoginRequest $request): JsonResponse
     {
         if (!Auth::attempt($request->validated())) {
             throw ValidationException::withMessages([
-                'email' => ['Datele de autentificare sunt incorecte.'],
+                'email' => ['The provided credentials are incorrect.'],
             ]);
         }
 
-        $request->session()->regenerate();
+        $user = Auth::user();
 
-        return $this->success([
-            'user' => Auth::user(),
-        ], 'Autentificare reușită.');
+        $user->tokens()->delete();
+
+        $tokens = $this->service->generateTokens($user);
+
+        return $this->sendResponseWithTokens(
+            $tokens,
+            ['user' => $user]
+        );
     }
 
-    public function logout(Request $request)
+    public function refresh(Request $request): JsonResponse
     {
-        Auth::guard('web')->logout();
+        $refreshToken = $request->cookie('refreshToken');
 
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
+        if (!$refreshToken) {
+            return response()->json([
+                'message' => 'Refresh token missing.'
+            ], 401);
+        }
 
-        return $this->success(null, 'Delogat cu succes.');
+        $tokens = $this->service->refreshTokens($refreshToken);
+
+        if (!$tokens) {
+            return response()->json([
+                'message' => 'Refresh token invalid or expired.'
+            ], 401);
+        }
+
+        return $this->sendResponseWithTokens($tokens);
+    }
+
+    public function logout(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        // Delete all of the user's tokens
+        $user->tokens()->delete();
+
+        return response()
+            ->json([
+                'success' => true,
+                'message' => 'Logged out successfully.'
+            ])
+            ->withoutCookie('refreshToken');
+    }
+
+    private function sendResponseWithTokens(
+        array $tokens,
+        array $body = [],
+        int $status = 200
+    ): JsonResponse {
+        $rtExpireTime = 10;
+
+        $cookie = cookie(
+            'refreshToken',
+            $tokens['refreshToken'],
+            $rtExpireTime,
+            '/',
+            null,
+            app()->environment('production'),
+            true,
+            false,
+            'lax'
+        );
+
+        return $this->success(
+            array_merge($body, [
+                'accessToken' => $tokens['accessToken'],
+            ]),
+            'Login successful.',
+            $status
+        )->withCookie($cookie);
     }
 }

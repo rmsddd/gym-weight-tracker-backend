@@ -4,7 +4,7 @@ namespace App\Http\Traits;
 
 trait ApiResponse
 {
-    protected function success($data = null, string $message = 'Operațiune reușită.', int $status = 200)
+    protected function success($data = null, string $message = 'Operation successful.', int $status = 200)
     {
         return response()->json([
             'success' => true,
@@ -13,7 +13,7 @@ trait ApiResponse
         ], $status);
     }
 
-    protected function error(string $message = 'A apărut o eroare.', int $status = 400, $errors = null)
+    protected function error(string $message = 'Something went wrong.', int $status = 400, $errors = null)
     {
         return response()->json([
             'success' => false,
