@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Workout;
 use App\Models\WorkoutExercise;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\DB;
 
 class WorkoutExerciseService
 {
@@ -26,6 +27,10 @@ class WorkoutExerciseService
 
     public function delete(WorkoutExercise $workoutExercise): void
     {
-        $workoutExercise->delete();
+        // Sets go with their exercise; they used to be left behind as orphan rows
+        DB::transaction(function () use ($workoutExercise) {
+            $workoutExercise->sets()->delete();
+            $workoutExercise->delete();
+        });
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreWorkoutRequest extends FormRequest
 {
@@ -12,6 +13,10 @@ class StoreWorkoutRequest extends FormRequest
             'name' => 'nullable|string|max:255',
             'date' => 'required|date',
             'note' => 'nullable|string',
+            'template_id' => [
+                'nullable',
+                Rule::exists('workout_templates', 'id')->where('user_id', $this->user()->id),
+            ],
         ];
     }
 

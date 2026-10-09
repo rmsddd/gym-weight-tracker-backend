@@ -32,6 +32,17 @@ class WorkoutPolicy
         return $workout->user_id === $user->id;
     }
 
+    // A completed workout is final and can no longer be started again
+    public function resume(User $user, Workout $workout): bool
+    {
+        return $workout->user_id === $user->id && $workout->completed_at === null;
+    }
+
+    public function complete(User $user, Workout $workout): bool
+    {
+        return $workout->user_id === $user->id;
+    }
+
     public function delete(User $user, Workout $workout): bool
     {
         return $workout->user_id === $user->id;

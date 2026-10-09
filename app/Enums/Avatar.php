@@ -14,4 +14,5 @@ enum Avatar: string
     case Robot = 'robot';
     case Dog = 'dog';
     case Tiger = 'tiger';
+    case Skeleton = 'skeleton';
 }

@@ -16,6 +16,7 @@ class Workout extends Model
         'duration_minutes',
         'started_at',
         'finished_at',
+        'completed_at',
     ];
 
     protected function casts(): array
@@ -24,6 +25,7 @@ class Workout extends Model
             'date' => 'date',
             'started_at' => 'datetime',
             'finished_at' => 'datetime',
+            'completed_at' => 'datetime',
         ];
     }
 

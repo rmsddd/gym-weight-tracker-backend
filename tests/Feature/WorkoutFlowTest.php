@@ -148,6 +148,7 @@ class WorkoutFlowTest extends TestCase
         $this->getJson('/api/user')->assertOk()->assertJsonPath('avatar', 'dino');
         $this->patchJson('/api/user/avatar', ['avatar' => 'lion'])->assertOk()->assertJsonPath('avatar', 'lion');
         $this->getJson('/api/user')->assertJsonPath('avatar', 'lion');
+        $this->patchJson('/api/user/avatar', ['avatar' => 'skeleton'])->assertOk()->assertJsonPath('avatar', 'skeleton');
         $this->patchJson('/api/user/avatar', ['avatar' => 'anything'])->assertUnprocessable();
         $this->patchJson('/api/user/avatar', [])->assertUnprocessable();
     }
