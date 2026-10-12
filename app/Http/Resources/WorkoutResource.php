@@ -23,6 +23,7 @@ class WorkoutResource extends JsonResource
                 'category' => $we->exercise->category?->name,
                 'sets_count' => $we->sets->count(),
                 'volume' => (float) $we->sets->sum(fn ($set) => $set->weight * $set->reps),
+                'minutes' => (float) $we->sets->sum('duration_minutes'),
             ])->values()),
         ];
     }

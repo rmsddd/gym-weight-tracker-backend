@@ -12,6 +12,7 @@ class ExerciseResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
+            'unit' => $this->unit->value,
             'category' => new CategoryResource($this->whenLoaded('category')),
         ];
     }

@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\ExerciseUnit;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateExerciseRequest extends FormRequest
 {
@@ -11,6 +13,7 @@ class UpdateExerciseRequest extends FormRequest
         return [
             'name' => 'required|string|max:255',
             'category_id' => 'required|exists:categories,id',
+            'unit' => ['sometimes', Rule::enum(ExerciseUnit::class)],
         ];
     }
 

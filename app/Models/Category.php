@@ -7,6 +7,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Category extends Model
 {
+    /** The one category that is not a muscle group; its exercises are logged in minutes. */
+    public const CARDIO = 'Cardio';
+
     protected $fillable = [
         'name',
     ];

@@ -14,8 +14,9 @@ class PersonalRecordResource extends JsonResource
 
         return [
             'exercise' => new ExerciseResource($workoutExercise->exercise),
-            'weight' => (float) $this->weight,
+            'weight' => $this->weight === null ? null : (float) $this->weight,
             'reps' => $this->reps,
+            'duration_minutes' => $this->duration_minutes === null ? null : (float) $this->duration_minutes,
             'workout_id' => $workoutExercise->workout_id,
             'date' => $workoutExercise->workout->date?->toDateString(),
         ];

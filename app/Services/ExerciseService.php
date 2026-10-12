@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Enums\ExerciseUnit;
+use App\Models\Category;
 use App\Models\Exercise;
 use Illuminate\Support\Collection;
 
@@ -20,6 +22,11 @@ class ExerciseService
 
     public function create(array $data): Exercise
     {
+        // Cardio is logged in minutes unless the caller says otherwise
+        $data['unit'] ??= Category::find($data['category_id'])?->name === Category::CARDIO
+            ? ExerciseUnit::Minutes
+            : ExerciseUnit::Kilograms;
+
         $exercise= Exercise::create($data);
         return $exercise->load('category');
     }

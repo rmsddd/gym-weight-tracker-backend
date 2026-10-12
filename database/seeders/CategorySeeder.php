@@ -19,6 +19,7 @@ class CategorySeeder extends Seeder
             'Forearms',
             'Abs',
             'Legs',
+            Category::CARDIO,
         ];
 
         foreach ($categories as $category) {

@@ -32,7 +32,8 @@ class MuscleStatsService
             ->groupBy(fn (WorkoutExercise $workoutExercise) => $workoutExercise->exercise->category_id)
             ->map(fn (Collection $items) => $items->pluck('workout_id')->unique()->count());
 
-        return Category::orderBy('id')->get()->map(function (Category $category) use ($sessions) {
+        // Cardio is a category but not a muscle group, so it has no level to show
+        return Category::where('name', '!=', Category::CARDIO)->orderBy('id')->get()->map(function (Category $category) use ($sessions) {
             $count = $sessions->get($category->id, 0);
 
             return [

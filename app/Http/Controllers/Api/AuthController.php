@@ -31,6 +31,9 @@ class AuthController extends Controller
             'password' => Hash::make($request->validated('password')),
         ]);
 
+        // Same as after a login: the SPA authenticates through the session, not the token
+        Auth::login($user);
+
         $tokens = $this->service->generateTokens($user);
 
         return $this->sendResponseWithTokens(

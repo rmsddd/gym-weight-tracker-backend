@@ -12,7 +12,7 @@ class PreviousSetsService
      * For each exercise in the given workout, the sets from the user's most recent earlier workout
      * that logged that exercise, keyed by exercise id.
      *
-     * @return array<int, array{date: string|null, sets: array<int, array{weight: float, reps: int}>}>
+     * @return array<int, array{date: string|null, sets: array<int, array{weight: float|null, reps: int|null, duration_minutes: float|null}>}>
      */
     public function forWorkout(Workout $workout): array
     {
@@ -51,8 +51,9 @@ class PreviousSetsService
             $result[$workoutExercise->exercise_id] = [
                 'date' => $workoutExercise->workout->date?->toDateString(),
                 'sets' => $workoutExercise->sets->sortBy('id')->map(fn ($set) => [
-                    'weight' => (float) $set->weight,
+                    'weight' => $set->weight === null ? null : (float) $set->weight,
                     'reps' => $set->reps,
+                    'duration_minutes' => $set->duration_minutes === null ? null : (float) $set->duration_minutes,
                 ])->values()->all(),
             ];
         }
