@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\ExerciseController;
+use App\Http\Controllers\Api\MonthlyStatsController;
 use App\Http\Controllers\Api\MuscleStatsController;
 use App\Http\Controllers\Api\PersonalRecordController;
 use App\Http\Controllers\Api\ProfileStatsController;
@@ -38,6 +39,7 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->group(function () {
     Route::get('personal-records', [PersonalRecordController::class, 'index']);
     Route::get('muscle-stats', [MuscleStatsController::class, 'index']);
     Route::get('profile-stats', [ProfileStatsController::class, 'show']);
+    Route::get('monthly-stats', [MonthlyStatsController::class, 'index']);
     Route::apiResource('workout-templates', WorkoutTemplateController::class)
         ->only(['index', 'store', 'show', 'destroy'])
         ->parameters(['workout-templates' => 'template']);
