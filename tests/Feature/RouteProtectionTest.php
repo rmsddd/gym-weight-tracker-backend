@@ -49,6 +49,26 @@ class RouteProtectionTest extends TestCase
         $this->getJson('/api/muscle-stats')->assertUnauthorized();
     }
 
+    public function test_login_says_which_field_is_wrong(): void
+    {
+        User::factory()->create(['email' => 'lifter@example.com']);
+
+        $this->postJson('/api/login', ['email' => 'nobody@example.com', 'password' => 'whatever'])
+            ->assertUnprocessable()
+            ->assertJsonPath('errors.email.0', 'No account uses this email.')
+            ->assertJsonMissingPath('errors.password');
+
+        $this->postJson('/api/login', ['email' => 'lifter@example.com', 'password' => 'wrong-password'])
+            ->assertUnprocessable()
+            ->assertJsonPath('errors.password.0', 'Incorrect password.')
+            ->assertJsonMissingPath('errors.email');
+
+        $this->postJson('/api/login', ['email' => 'not-an-email', 'password' => ''])
+            ->assertUnprocessable()
+            ->assertJsonPath('errors.email.0', 'Enter a valid email address, like name@example.com.')
+            ->assertJsonPath('errors.password.0', 'Enter your password.');
+    }
+
     public function test_login_is_rate_limited_after_repeated_failures(): void
     {
         User::factory()->create(['email' => 'lifter@example.com']);

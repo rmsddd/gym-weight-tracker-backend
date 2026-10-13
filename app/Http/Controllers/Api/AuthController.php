@@ -45,10 +45,15 @@ class AuthController extends Controller
 
     public function login(LoginRequest $request): JsonResponse
     {
-        if (!Auth::attempt($request->validated())) {
-            throw ValidationException::withMessages([
-                'email' => ['The provided credentials are incorrect.'],
-            ]);
+        $credentials = $request->validated();
+
+        if (!Auth::attempt($credentials)) {
+            // Say which field is wrong; registering already reveals whether an email is taken
+            throw ValidationException::withMessages(
+                User::where('email', $credentials['email'])->exists()
+                    ? ['password' => ['Incorrect password.']]
+                    : ['email' => ['No account uses this email.']]
+            );
         }
 
         $user = Auth::user();
