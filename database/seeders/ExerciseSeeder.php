@@ -12,6 +12,51 @@ class ExerciseSeeder extends Seeder
     /** Held for time instead of lifted, so they are logged in minutes like the cardio ones. */
     private const TIMED = ['Plank'];
 
+    /**
+     * Compound exercises: the muscle groups they work besides their own category, most involved first.
+     * An exercise that is not listed is an isolation one.
+     */
+    private const SECONDARY = [
+        'Barbell Bench Press' => ['Triceps', 'Shoulders'],
+        'Barbell Incline Bench Press' => ['Triceps', 'Shoulders'],
+        'Incline Dumbbell Press' => ['Triceps', 'Shoulders'],
+        'Push-Up' => ['Triceps', 'Shoulders'],
+        'Machine Chest Press' => ['Triceps', 'Shoulders'],
+        'Smith Bench Press' => ['Triceps', 'Shoulders'],
+        'Smith Incline Bench Press' => ['Triceps', 'Shoulders'],
+        'Smith Decline Bench Press' => ['Triceps', 'Shoulders'],
+        'Pull-Up' => ['Biceps'],
+        'Lat Pulldown' => ['Biceps'],
+        'Barbell Row' => ['Biceps', 'Traps'],
+        'Dumbbell Row' => ['Biceps', 'Traps'],
+        'Seated Cable Row' => ['Biceps', 'Traps'],
+        'Smith Row' => ['Biceps', 'Traps'],
+        'Deadlift' => ['Legs', 'Traps', 'Forearms'],
+        'Smith Deadlift' => ['Legs', 'Traps', 'Forearms'],
+        'Good Morning' => ['Legs'],
+        'Smith Good Morning' => ['Legs'],
+        'Overhead Press' => ['Triceps'],
+        'Dumbbell Shoulder Press' => ['Triceps'],
+        'Smith Overhead Press' => ['Triceps'],
+        'Upright Row' => ['Traps'],
+        'Smith Upright Row' => ['Traps'],
+        'Face Pull' => ['Shoulders'],
+        'Dips' => ['Chest', 'Shoulders'],
+        'Close-Grip Bench Press' => ['Chest', 'Shoulders'],
+        'Smith Close-Grip Bench Press' => ['Chest', 'Shoulders'],
+        "Farmer's Walk" => ['Traps'],
+        'Barbell Squat' => ['Abs'],
+        'Leg Press' => ['Abs'],
+        'Lunge' => ['Abs'],
+        'Bulgarian Split Squat' => ['Abs'],
+        'Smith Squat' => ['Abs'],
+        'Smith Front Squat' => ['Abs'],
+        'Smith Lunge' => ['Abs'],
+        'Smith Bulgarian Split Squat' => ['Abs'],
+        'Romanian Deadlift (RDLs)' => ['Back'],
+        'Smith Romanian Deadlift' => ['Back'],
+    ];
+
     public function run(): void
     {
         $exercises = [
@@ -27,16 +72,25 @@ class ExerciseSeeder extends Seeder
             Category::CARDIO => ['Treadmill Run', 'Treadmill Walk', 'Stationary Bike', 'Elliptical', 'Rowing Machine', 'Stair Climber', 'Jump Rope', 'Outdoor Run', 'Outdoor Cycling', 'Swimming'],
         ];
 
-        foreach ($exercises as $categoryName => $names) {
-            $category = Category::firstOrCreate(['name' => $categoryName]);
+        // Every category first: a secondary muscle group can be one that comes later in the list
+        $categoryIds = [];
+        foreach (array_keys($exercises) as $categoryName) {
+            $categoryIds[$categoryName] = Category::firstOrCreate(['name' => $categoryName])->id;
+        }
 
+        foreach ($exercises as $categoryName => $names) {
             foreach ($names as $name) {
                 $timed = $categoryName === Category::CARDIO || in_array($name, self::TIMED, true);
 
                 // user_id null = the shared catalog; a user's own exercise with the same name is left alone
-                Exercise::updateOrCreate(
-                    ['name' => $name, 'category_id' => $category->id, 'user_id' => null],
+                $exercise = Exercise::updateOrCreate(
+                    ['name' => $name, 'category_id' => $categoryIds[$categoryName], 'user_id' => null],
                     ['unit' => $timed ? ExerciseUnit::Minutes : ExerciseUnit::Kilograms],
+                );
+
+                // Synced for every exercise, so one taken off the list above loses its groups too
+                $exercise->secondaryCategories()->sync(
+                    array_map(fn ($secondary) => $categoryIds[$secondary], self::SECONDARY[$name] ?? [])
                 );
             }
         }

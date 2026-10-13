@@ -12,12 +12,12 @@ class ExerciseService
 
     public function getAll(int $userId): Collection
     {
-        return Exercise::visibleTo($userId)->with('category')->get();
+        return Exercise::visibleTo($userId)->with('category', 'secondaryCategories')->get();
     }
 
     public function findById(int $id): Exercise
     {
-        return Exercise::with('category')->findOrFail($id);
+        return Exercise::with('category', 'secondaryCategories')->findOrFail($id);
     }
 
     public function create(array $data): Exercise
@@ -28,13 +28,13 @@ class ExerciseService
             : ExerciseUnit::Kilograms;
 
         $exercise= Exercise::create($data);
-        return $exercise->load('category');
+        return $exercise->load('category', 'secondaryCategories');
     }
 
     public function update(Exercise $exercise, array $data): Exercise
     {
         $exercise->update($data);
-        return $exercise->fresh()->load('category');
+        return $exercise->fresh()->load('category', 'secondaryCategories');
     }
 
     public function delete(Exercise $exercise): void

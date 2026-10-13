@@ -53,6 +53,10 @@ class AuthController extends Controller
 
         $user = Auth::user();
 
+        // A session left behind by another account (one deleted while logged in) still holds that
+        // account's password hash; Sanctum would compare it with this user's and reject the next request
+        $request->session()->forget('password_hash_'.Auth::getDefaultDriver());
+
         $user->tokens()->delete();
 
         $tokens = $this->service->generateTokens($user);

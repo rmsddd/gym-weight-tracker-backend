@@ -14,6 +14,7 @@ class ExerciseResource extends JsonResource
             'name' => $this->name,
             'unit' => $this->unit->value,
             'category' => new CategoryResource($this->whenLoaded('category')),
+            'secondary_categories' => CategoryResource::collection($this->whenLoaded('secondaryCategories')),
         ];
     }
 }

@@ -5,7 +5,9 @@ namespace App\Models;
 use App\Enums\ExerciseUnit;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Exercise extends Model
 {
@@ -30,6 +32,13 @@ class Exercise extends Model
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
+    }
+
+    /** The other muscle groups a compound exercise works; empty for an isolation exercise. */
+    public function secondaryCategories(): BelongsToMany
+    {
+        return $this->belongsToMany(Category::class, 'exercise_secondary_categories')
+            ->orderByPivot('id');
     }
 
     public function user(): BelongsTo

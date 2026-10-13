@@ -7,6 +7,7 @@ enum Avatar: string
 {
     case Athlete = 'athlete';
     case Andrei = 'andrei';
+    case Marian = 'marian';
     case Grandpa = 'grandpa';
     case Dino = 'dino';
     case Bear = 'bear';

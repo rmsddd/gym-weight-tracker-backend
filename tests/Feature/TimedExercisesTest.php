@@ -151,6 +151,22 @@ class TimedExercisesTest extends TestCase
             ->assertUnprocessable();
     }
 
+    public function test_compound_exercises_list_the_other_muscle_groups_they_work(): void
+    {
+        $this->seed([CategorySeeder::class, ExerciseSeeder::class]);
+        $this->seed([CategorySeeder::class, ExerciseSeeder::class]);
+
+        Sanctum::actingAs(User::factory()->create());
+        $exercises = collect($this->getJson('/api/exercises')->assertOk()->json('data'))->keyBy('name');
+
+        $this->assertSame('Triceps', $exercises['Dips']['category']['name']);
+        $this->assertSame(['Chest', 'Shoulders'], array_column($exercises['Dips']['secondary_categories'], 'name'));
+        $this->assertSame([], $exercises['Dumbbell Curl']['secondary_categories']);
+
+        // Every name on the compound list is an exercise of the catalog
+        $this->assertSame(38, $exercises->filter(fn ($exercise) => $exercise['secondary_categories'] !== [])->count());
+    }
+
     public function test_seeders_add_the_cardio_catalog_in_minutes_and_keep_muscle_stats_to_muscles(): void
     {
         // An older catalog row that was created before units existed
