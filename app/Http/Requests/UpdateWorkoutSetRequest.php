@@ -18,6 +18,7 @@ class UpdateWorkoutSetRequest extends FormRequest
         return [
             'weight' => 'sometimes|required|numeric|min:0',
             'reps' => 'sometimes|required|integer|min:0',
+            'reps_max' => 'sometimes|nullable|integer|min:1',
         ];
     }
 

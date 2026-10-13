@@ -10,6 +10,7 @@ class WorkoutSet extends Model
     protected $fillable = [
         'weight',
         'reps',
+        'reps_max',
         'duration_minutes',
         'workout_exercise_id',
     ];

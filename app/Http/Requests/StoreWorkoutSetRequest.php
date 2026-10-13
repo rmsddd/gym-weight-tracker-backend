@@ -19,6 +19,8 @@ class StoreWorkoutSetRequest extends FormRequest
         return [
             'weight' => 'required|numeric|min:0',
             'reps' => 'required|integer|min:0',
+            // "9-10": the last rep was a struggle, so the set is logged as a range
+            'reps_max' => 'nullable|integer|gt:reps',
         ];
     }
 

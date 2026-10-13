@@ -14,6 +14,7 @@ class WorkoutSetResource extends JsonResource
             'workout_exercise_id' => $this->workout_exercise_id,
             'weight' => $this->weight,
             'reps' => $this->reps,
+            'reps_max' => $this->reps_max,
             'duration_minutes' => $this->duration_minutes === null ? null : (float) $this->duration_minutes,
         ];
     }

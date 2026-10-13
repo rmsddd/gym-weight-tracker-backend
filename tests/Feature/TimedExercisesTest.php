@@ -70,6 +70,38 @@ class TimedExercisesTest extends TestCase
             ->assertJsonPath('data.duration_minutes', null);
     }
 
+    public function test_reps_can_be_logged_as_a_range_when_the_last_one_was_a_struggle(): void
+    {
+        Sanctum::actingAs(User::factory()->create());
+        $bench = Exercise::create(['name' => 'Bench Press', 'category_id' => Category::create(['name' => 'Chest'])->id]);
+
+        $workoutId = $this->postJson('/api/workouts', ['date' => '2026-10-11'])->json('data.id');
+        $weId = $this->postJson("/api/workouts/$workoutId/exercises", ['exercise_id' => $bench->id])->json('data.id');
+        $sets = "/api/workouts/$workoutId/exercises/$weId/sets";
+
+        $this->postJson($sets, ['weight' => 62.5, 'reps' => 9, 'reps_max' => 9])->assertUnprocessable();
+        $this->postJson($sets, ['weight' => 62.5, 'reps' => 9, 'reps_max' => 10])
+            ->assertCreated()
+            ->assertJsonPath('data.reps', 9)
+            ->assertJsonPath('data.reps_max', 10);
+        $this->postJson($sets, ['weight' => 62.5, 'reps' => 8])
+            ->assertCreated()
+            ->assertJsonPath('data.reps_max', null);
+
+        $this->getJson('/api/personal-records')
+            ->assertOk()
+            ->assertJsonPath('data.0.reps', 9)
+            ->assertJsonPath('data.0.reps_max', 10);
+
+        $nextId = $this->postJson('/api/workouts', ['date' => '2026-10-12'])->json('data.id');
+        $this->postJson("/api/workouts/$nextId/exercises", ['exercise_id' => $bench->id]);
+
+        $this->getJson("/api/workouts/$nextId/previous-sets")
+            ->assertOk()
+            ->assertJsonPath("data.{$bench->id}.sets.0.reps_max", 10)
+            ->assertJsonPath("data.{$bench->id}.sets.1.reps_max", null);
+    }
+
     public function test_record_history_and_previous_sets_use_the_duration_of_timed_sets(): void
     {
         $user = User::factory()->create();
