@@ -3,24 +3,25 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\RegisterRequest;
 use App\Http\Requests\LoginRequest;
+use App\Http\Requests\RegisterRequest;
 use App\Http\Traits\ApiResponse;
 use App\Models\User;
 use App\Services\AuthService;
+use App\Services\EmailVerificationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
-use Laravel\Sanctum\PersonalAccessToken;
 
 class AuthController extends Controller
 {
     use ApiResponse;
 
     public function __construct(
-        protected AuthService $service
+        protected AuthService $service,
+        protected EmailVerificationService $emailVerification
     ) {}
 
     public function register(RegisterRequest $request): JsonResponse
@@ -30,6 +31,9 @@ class AuthController extends Controller
             'email' => $request->validated('email'),
             'password' => Hash::make($request->validated('password')),
         ]);
+
+        // Until they open the link, the app only shows them the "confirm your email" screen
+        $this->emailVerification->sendLink($user);
 
         // Same as after a login: the SPA authenticates through the session, not the token
         Auth::login($user);
@@ -47,7 +51,7 @@ class AuthController extends Controller
     {
         $credentials = $request->validated();
 
-        if (!Auth::attempt($credentials)) {
+        if (! Auth::attempt($credentials)) {
             // Say which field is wrong; registering already reveals whether an email is taken
             throw ValidationException::withMessages(
                 User::where('email', $credentials['email'])->exists()
@@ -76,17 +80,17 @@ class AuthController extends Controller
     {
         $refreshToken = $request->cookie('refreshToken');
 
-        if (!$refreshToken) {
+        if (! $refreshToken) {
             return response()->json([
-                'message' => 'Refresh token missing.'
+                'message' => 'Refresh token missing.',
             ], 401);
         }
 
         $tokens = $this->service->refreshTokens($refreshToken);
 
-        if (!$tokens) {
+        if (! $tokens) {
             return response()->json([
-                'message' => 'Refresh token invalid or expired.'
+                'message' => 'Refresh token invalid or expired.',
             ], 401);
         }
 
@@ -103,7 +107,7 @@ class AuthController extends Controller
         return response()
             ->json([
                 'success' => true,
-                'message' => 'Logged out successfully.'
+                'message' => 'Logged out successfully.',
             ])
             ->withoutCookie('refreshToken');
     }

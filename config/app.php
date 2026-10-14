@@ -54,6 +54,10 @@ return [
 
     'url' => env('APP_URL', 'http://localhost'),
 
+    // Where the Vue app lives; links in emails (reset password, verify email) point here.
+    // In production Laravel serves the Vue build itself, so it is the same as APP_URL.
+    'frontend_url' => env('FRONTEND_URL', env('APP_URL', 'http://localhost')),
+
     /*
     |--------------------------------------------------------------------------
     | Application Timezone

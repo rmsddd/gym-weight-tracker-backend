@@ -2,28 +2,34 @@
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CategoryController;
+use App\Http\Controllers\Api\EmailVerificationController;
 use App\Http\Controllers\Api\ExerciseController;
 use App\Http\Controllers\Api\MonthlyStatsController;
 use App\Http\Controllers\Api\MuscleStatsController;
+use App\Http\Controllers\Api\PasswordResetController;
 use App\Http\Controllers\Api\PersonalRecordController;
+use App\Http\Controllers\Api\PreviousSetsController;
 use App\Http\Controllers\Api\ProfileStatsController;
 use App\Http\Controllers\Api\UserAvatarController;
 use App\Http\Controllers\Api\WorkoutController;
 use App\Http\Controllers\Api\WorkoutExerciseController;
-use App\Http\Controllers\Api\PreviousSetsController;
 use App\Http\Controllers\Api\WorkoutSetController;
 use App\Http\Controllers\Api\WorkoutTemplateController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-
 Route::middleware('throttle:auth')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);
     Route::post('/refresh', [AuthController::class, 'refresh']);
+    Route::post('/forgot-password', [PasswordResetController::class, 'sendLink']);
+    Route::post('/reset-password', [PasswordResetController::class, 'reset']);
+    // The link from the confirmation email; its signature is checked in the controller
+    Route::get('/email/verify/{id}/{hash}', [EmailVerificationController::class, 'verify'])
+        ->name('verification.verify');
 });
 
-
+// Logged in but maybe not confirmed yet: just enough to show the "confirm your email" screen
 Route::middleware(['auth:sanctum', 'throttle:api'])->group(function () {
 
     Route::post('/logout', [AuthController::class, 'logout']);
@@ -31,6 +37,12 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->group(function () {
     Route::get('/user', function (Request $request) {
         return $request->user();
     });
+
+    Route::post('/email/verification-notification', [EmailVerificationController::class, 'resend'])
+        ->middleware('throttle:verification');
+});
+
+Route::middleware(['auth:sanctum', 'throttle:api', 'verified'])->group(function () {
 
     Route::patch('/user/avatar', [UserAvatarController::class, 'update']);
 
@@ -52,12 +64,12 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->group(function () {
 
     Route::apiResource('workouts.exercises', WorkoutExerciseController::class
     )->parameters([
-        'exercises' => 'workoutExercise'
+        'exercises' => 'workoutExercise',
     ])->scoped();
 
     Route::apiResource('workouts.exercises.sets', WorkoutSetController::class
     )->parameters([
         'exercises' => 'workoutExercise',
-        'sets' => 'workoutSet'
+        'sets' => 'workoutSet',
     ])->scoped();
 });
