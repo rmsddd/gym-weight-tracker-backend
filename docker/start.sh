@@ -10,9 +10,8 @@ sed -i "s/<VirtualHost \*:[0-9]*>/<VirtualHost *:${PORT}>/" /etc/apache2/sites-a
 export MYSQL_ATTR_SSL_CA=/var/www/html/docker/db-ca.pem
 
 php artisan migrate --force
-# Categoriile si exercitiile de baza; seederele folosesc firstOrCreate, deci pot rula la fiecare pornire
-php artisan db:seed --class=CategorySeeder --force
-php artisan db:seed --class=ExerciseSeeder --force
+# Categoriile si exercitiile de baza; ruleaza seederele doar cand fisierele lor s-au schimbat de la ultimul deploy
+php artisan catalog:seed
 php artisan config:cache
 php artisan route:cache
 
