@@ -9,7 +9,17 @@ sed -i "s/<VirtualHost \*:[0-9]*>/<VirtualHost *:${PORT}>/" /etc/apache2/sites-a
 # Certificatul CA al bazei de date (public, nu e secret) vine din repo, ca sa il poata citi si Apache
 export MYSQL_ATTR_SSL_CA=/var/www/html/docker/db-ca.pem
 
-php artisan migrate --force
+# Baza de date poate raspunde greu imediat dupa pornire, asa ca reincearca un minut inainte sa renunte
+attempt=1
+until php artisan migrate --force; do
+    if [ "$attempt" -ge 10 ]; then
+        echo "Baza de date nu raspunde dupa $attempt incercari, opresc containerul" >&2
+        exit 1
+    fi
+    echo "Migrarea a esuat (incercarea $attempt/10), reincerc in 6 secunde..." >&2
+    attempt=$((attempt + 1))
+    sleep 6
+done
 # Categoriile si exercitiile de baza; ruleaza seederele doar cand fisierele lor s-au schimbat de la ultimul deploy
 php artisan catalog:seed
 php artisan config:cache
