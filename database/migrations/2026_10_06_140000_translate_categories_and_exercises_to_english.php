@@ -1,8 +1,8 @@
 <?php
 
 use App\Models\Category;
-use App\Models\Exercise;
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
@@ -87,7 +87,8 @@ return new class extends Migration
             $target = Category::where('name', $new)->first();
 
             if ($target) {
-                Exercise::where('category_id', $oldCategory->id)->update(['category_id' => $target->id]);
+                // Query builder: the Exercise model now expects columns this migration predates
+                DB::table('exercises')->where('category_id', $oldCategory->id)->update(['category_id' => $target->id, 'updated_at' => now()]);
                 $oldCategory->delete();
             } else {
                 $oldCategory->update(['name' => $new]);
@@ -95,7 +96,7 @@ return new class extends Migration
         }
 
         foreach (self::EXERCISES as $old => $new) {
-            Exercise::where('name', $old)->update(['name' => $new]);
+            DB::table('exercises')->where('name', $old)->update(['name' => $new, 'updated_at' => now()]);
         }
     }
 

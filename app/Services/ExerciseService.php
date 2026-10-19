@@ -5,7 +5,9 @@ namespace App\Services;
 use App\Enums\ExerciseUnit;
 use App\Models\Category;
 use App\Models\Exercise;
+use App\Models\WorkoutTemplateExercise;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 class ExerciseService
 {
@@ -13,6 +15,12 @@ class ExerciseService
     public function getAll(int $userId): Collection
     {
         return Exercise::visibleTo($userId)->with('category', 'secondaryCategories')->get();
+    }
+
+    /** The user's own exercises they deleted, which their workout history can still be filtered by. */
+    public function getDeleted(int $userId): Collection
+    {
+        return Exercise::onlyTrashed()->where('user_id', $userId)->with('category', 'secondaryCategories')->get();
     }
 
     public function findById(int $id): Exercise
@@ -39,6 +47,11 @@ class ExerciseService
 
     public function delete(Exercise $exercise): void
     {
-        $exercise->delete();
+        // Soft deleted: the workouts that logged it keep their sets. Templates only plan
+        // future workouts, so it is taken out of them.
+        DB::transaction(function () use ($exercise) {
+            WorkoutTemplateExercise::where('exercise_id', $exercise->id)->delete();
+            $exercise->delete();
+        });
     }
 }

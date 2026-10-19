@@ -8,9 +8,13 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Exercise extends Model
 {
+    // A deleted exercise disappears from the picker and the records, but stays in the workouts that logged it
+    use SoftDeletes;
+
     protected $fillable = [
         'name',
         'unit',

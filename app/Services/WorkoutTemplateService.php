@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Exercise;
 use App\Models\Workout;
 use App\Models\WorkoutTemplate;
 use Illuminate\Database\Eloquent\Collection;
@@ -30,7 +31,10 @@ class WorkoutTemplateService
 
     public function createFromWorkout(Workout $workout, string $name): WorkoutTemplate
     {
-        $exerciseIds = $workout->workoutExercises()->orderBy('id')->pluck('exercise_id')->unique()->all();
+        // An exercise deleted since then stays in the workout but is not copied into the template
+        $exerciseIds = $workout->workoutExercises()
+            ->whereIn('exercise_id', Exercise::select('id'))
+            ->orderBy('id')->pluck('exercise_id')->unique()->all();
         return $this->create($workout->user_id, $name, $exerciseIds);
     }
 

@@ -115,6 +115,45 @@ class WorkoutFlowTest extends TestCase
         $this->postJson("/api/workouts/$workoutId/exercises", ['exercise_id' => $mine])->assertUnprocessable();
     }
 
+    public function test_deleting_a_custom_exercise_hides_it_but_keeps_its_history(): void
+    {
+        $category = Category::create(['name' => 'Chest']);
+        $catalog = Exercise::create(['name' => 'Push-Up', 'category_id' => $category->id]);
+        Sanctum::actingAs(User::factory()->create());
+
+        $mine = $this->postJson('/api/exercises', ['name' => 'Typo Press', 'category_id' => $category->id])
+            ->assertCreated()->assertJsonPath('data.is_custom', true)->json('data.id');
+        $this->getJson("/api/exercises/{$catalog->id}")->assertJsonPath('data.is_custom', false);
+
+        $workoutId = $this->postJson('/api/workouts', ['date' => '2026-10-06'])->json('data.id');
+        $mineWe = $this->postJson("/api/workouts/$workoutId/exercises", ['exercise_id' => $mine])->json('data.id');
+        $this->postJson("/api/workouts/$workoutId/exercises/$mineWe/sets", ['weight' => 20, 'reps' => 10])->assertCreated();
+        $catalogWe = $this->postJson("/api/workouts/$workoutId/exercises", ['exercise_id' => $catalog->id])->json('data.id');
+        $this->postJson("/api/workouts/$workoutId/exercises/$catalogWe/sets", ['weight' => 30, 'reps' => 8])->assertCreated();
+        $this->postJson("/api/workouts/$workoutId/template", ['name' => 'Push day'])->assertCreated();
+
+        $this->getJson('/api/personal-records')->assertJsonCount(2, 'data');
+
+        $this->deleteJson("/api/exercises/$mine")->assertNoContent();
+
+        // Gone from the picker, the records and the templates
+        $this->getJson('/api/exercises')->assertJsonCount(1, 'data');
+        $this->getJson('/api/personal-records')->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.exercise.name', 'Push-Up');
+        $this->assertDatabaseMissing('workout_template_exercises', ['exercise_id' => $mine]);
+        $this->assertDatabaseHas('workout_template_exercises', ['exercise_id' => $catalog->id]);
+        $this->postJson("/api/workouts/$workoutId/exercises", ['exercise_id' => $mine])->assertUnprocessable();
+
+        // Still in the workout that logged it, with its sets, and still a history filter
+        $this->getJson("/api/workouts/$workoutId/exercises")
+            ->assertJsonPath('data.0.exercise.name', 'Typo Press')
+            ->assertJsonPath('data.0.exercise.is_deleted', true)
+            ->assertJsonPath('data.0.sets.0.reps', 10);
+        $this->getJson("/api/workouts?exercise_id=$mine")->assertJsonCount(1, 'data');
+        $this->getJson('/api/exercises?deleted=1')->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.name', 'Typo Press');
+    }
+
     public function test_personal_records_return_the_best_set_per_exercise_for_the_current_user_only(): void
     {
         $exercise = Exercise::create(['name' => 'Push-Up', 'category_id' => Category::create(['name' => 'Chest'])->id]);

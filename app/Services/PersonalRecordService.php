@@ -40,6 +40,8 @@ class PersonalRecordService
             ->join('workouts', 'workouts.id', '=', 'workout_exercises.workout_id')
             ->join('exercises', 'exercises.id', '=', 'workout_exercises.exercise_id')
             ->where('workouts.user_id', $userId)
+            // A deleted exercise keeps its history but no longer counts as a record
+            ->whereNull('exercises.deleted_at')
             ->selectRaw(
                 'workout_sets.id, ROW_NUMBER() OVER ('
                 .'PARTITION BY workout_exercises.exercise_id '

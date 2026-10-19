@@ -14,7 +14,8 @@ class WorkoutExercise extends Model
 
     public function exercise(): BelongsTo
     {
-        return $this->belongsTo(Exercise::class);
+        // Deleted exercises included, so the workouts that logged one keep showing it
+        return $this->belongsTo(Exercise::class)->withTrashed();
     }
 
     public function workout(): BelongsTo

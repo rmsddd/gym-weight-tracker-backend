@@ -8,15 +8,19 @@ use App\Http\Requests\UpdateExerciseRequest;
 use App\Http\Resources\ExerciseResource;
 use App\Models\Exercise;
 use App\Services\ExerciseService;
+use Illuminate\Http\Request;
 
 class ExerciseController extends Controller
 {
     public function __construct(protected ExerciseService $service) {}
 
-    public function index()
+    public function index(Request $request)
     {
         $this->authorize('viewAny', Exercise::class);
-        $exercises = $this->service->getAll(auth()->id());
+        // ?deleted=1 lists the user's deleted exercises instead, for the history filter
+        $exercises = $request->boolean('deleted')
+            ? $this->service->getDeleted(auth()->id())
+            : $this->service->getAll(auth()->id());
         return ExerciseResource::collection($exercises);
     }
 

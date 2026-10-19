@@ -16,7 +16,7 @@ class StoreWorkoutTemplateRequest extends FormRequest
                 'integer',
                 Rule::exists('exercises', 'id')->where(
                     fn ($query) => $query->whereNull('user_id')->orWhere('user_id', $this->user()->id)
-                ),
+                )->whereNull('deleted_at'),
             ],
         ];
     }
