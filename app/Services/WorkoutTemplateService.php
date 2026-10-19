@@ -34,15 +34,15 @@ class WorkoutTemplateService
         // An exercise deleted since then stays in the workout but is not copied into the template
         $exerciseIds = $workout->workoutExercises()
             ->whereIn('exercise_id', Exercise::select('id'))
-            ->orderBy('id')->pluck('exercise_id')->unique()->all();
+            ->pluck('exercise_id')->unique()->all();
         return $this->create($workout->user_id, $name, $exerciseIds);
     }
 
     /** Copies the template exercises (without sets) into a freshly created workout. */
     public function applyToWorkout(WorkoutTemplate $template, Workout $workout): void
     {
-        foreach ($template->exercises as $item) {
-            $workout->workoutExercises()->create(['exercise_id' => $item->exercise_id]);
+        foreach ($template->exercises->values() as $position => $item) {
+            $workout->workoutExercises()->create(['exercise_id' => $item->exercise_id, 'position' => $position]);
         }
     }
 

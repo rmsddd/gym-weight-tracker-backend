@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ReorderWorkoutExercisesRequest;
 use App\Http\Requests\StoreWorkoutExerciseRequest;
 use App\Http\Requests\UpdateWorkoutExerciseRequest;
 use App\Http\Resources\WorkoutExerciseResource;
@@ -26,6 +27,12 @@ class WorkoutExerciseController extends Controller
         $this->authorize('create', [WorkoutExercise::class, $workout]);
         $workoutExercise = $this->service->create($workout, $request->validated());
         return new WorkoutExerciseResource($workoutExercise->load(['exercise.category', 'sets']));
+    }
+
+    public function reorder(ReorderWorkoutExercisesRequest $request, Workout $workout)
+    {
+        $workoutExercises = $this->service->reorder($workout, $request->validated('ids'));
+        return WorkoutExerciseResource::collection($workoutExercises);
     }
 
     public function show(Workout $workout, WorkoutExercise $workoutExercise)

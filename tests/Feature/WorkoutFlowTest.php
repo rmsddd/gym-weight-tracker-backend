@@ -38,6 +38,38 @@ class WorkoutFlowTest extends TestCase
             ->assertJsonPath('data.duration_minutes', 0);
     }
 
+    public function test_user_can_reorder_the_exercises_of_a_workout(): void
+    {
+        $user = User::factory()->create();
+        Sanctum::actingAs($user);
+        $chest = Category::create(['name' => 'Chest']);
+        $workoutId = $this->postJson('/api/workouts', ['date' => '2026-10-06'])->json('data.id');
+        $ids = collect(['Push-Up', 'Dips', 'Cable Fly'])->map(fn ($name) => $this->postJson(
+            "/api/workouts/$workoutId/exercises",
+            ['exercise_id' => Exercise::create(['name' => $name, 'category_id' => $chest->id])->id],
+        )->json('data.id'))->all();
+        $this->postJson("/api/workouts/$workoutId/exercises/{$ids[2]}/sets", ['weight' => 10, 'reps' => 12]);
+
+        $this->putJson("/api/workouts/$workoutId/exercise-order", ['ids' => [$ids[2], $ids[0], $ids[1]]])
+            ->assertOk()
+            ->assertJsonPath('data.0.exercise.name', 'Cable Fly')
+            ->assertJsonPath('data.0.sets.0.reps', 12);
+
+        $names = fn () => array_column($this->getJson("/api/workouts/$workoutId/exercises")->json('data'), 'exercise');
+        $this->assertSame(['Cable Fly', 'Push-Up', 'Dips'], array_column($names(), 'name'));
+
+        // A new exercise goes to the end
+        $this->postJson("/api/workouts/$workoutId/exercises", ['exercise_id' => Exercise::create(['name' => 'Dumbbell Fly', 'category_id' => $chest->id])->id]);
+        $this->assertSame(['Cable Fly', 'Push-Up', 'Dips', 'Dumbbell Fly'], array_column($names(), 'name'));
+
+        // The order has to name every exercise of the workout once, and only those
+        $this->putJson("/api/workouts/$workoutId/exercise-order", ['ids' => [$ids[0], $ids[1]]])->assertUnprocessable();
+        $this->putJson("/api/workouts/$workoutId/exercise-order", ['ids' => [$ids[0], $ids[0], $ids[1], $ids[2]]])->assertUnprocessable();
+
+        Sanctum::actingAs(User::factory()->create());
+        $this->putJson("/api/workouts/$workoutId/exercise-order", ['ids' => array_reverse($ids)])->assertForbidden();
+    }
+
     public function test_other_users_cannot_access_workout_exercises(): void
     {
         $owner = User::factory()->create();

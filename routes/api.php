@@ -55,6 +55,7 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->group(function () {
     Route::post('workouts/{workout}/resume', [WorkoutController::class, 'resume']);
     Route::post('workouts/{workout}/complete', [WorkoutController::class, 'complete']);
     Route::apiResource('workouts', WorkoutController::class);
+    Route::put('workouts/{workout}/exercise-order', [WorkoutExerciseController::class, 'reorder']);
 
     Route::apiResource('workouts.exercises', WorkoutExerciseController::class
     )->parameters([

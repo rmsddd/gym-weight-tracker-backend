@@ -36,6 +36,7 @@ class Workout extends Model
 
     public function workoutExercises(): HasMany
     {
-        return $this->hasMany(WorkoutExercise::class);
+        // In the order the user arranged them; id breaks ties between rows from before positions
+        return $this->hasMany(WorkoutExercise::class)->orderBy('position')->orderBy('id');
     }
 }
