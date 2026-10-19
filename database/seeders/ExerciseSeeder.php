@@ -31,6 +31,7 @@ class ExerciseSeeder extends Seeder
         'Dumbbell Row' => ['Biceps', 'Traps'],
         'Seated Cable Row' => ['Biceps', 'Traps'],
         'Smith Row' => ['Biceps', 'Traps'],
+        'T-Bar Row' => ['Biceps', 'Traps'],
         'Deadlift' => ['Legs', 'Traps', 'Forearms'],
         'Smith Deadlift' => ['Legs', 'Traps', 'Forearms'],
         'Good Morning' => ['Legs'],
@@ -55,16 +56,18 @@ class ExerciseSeeder extends Seeder
         'Smith Bulgarian Split Squat' => ['Abs'],
         'Romanian Deadlift (RDLs)' => ['Back'],
         'Smith Romanian Deadlift' => ['Back'],
+        'Reverse Preacher Curl' => ['Forearms'],
+        'Seated Reverse Preacher Curl' => ['Forearms'],
     ];
 
     public function run(): void
     {
         $exercises = [
             'Chest' => ['Barbell Bench Press', 'Barbell Incline Bench Press', 'Incline Dumbbell Press', 'Dumbbell Fly', 'Push-Up', 'Machine Chest Press', 'Cable Fly', 'Smith Bench Press', 'Smith Incline Bench Press', 'Smith Decline Bench Press'],
-            'Back' => ['Pull-Up', 'Barbell Row', 'Dumbbell Row', 'Lat Pulldown', 'Lat Pullover', 'Seated Cable Row', 'Deadlift', 'Back Extension', 'Good Morning', 'Superman', 'Smith Row', 'Smith Deadlift', 'Smith Good Morning'],
+            'Back' => ['Pull-Up', 'Barbell Row', 'Dumbbell Row', 'Lat Pulldown', 'Lat Pullover', 'Seated Cable Row', 'T-Bar Row', 'Deadlift', 'Back Extension', 'Good Morning', 'Superman', 'Smith Row', 'Smith Deadlift', 'Smith Good Morning'],
             'Shoulders' => ['Overhead Press', 'Lateral Raise', 'Bent Arm Lateral Raise', 'Front Raise', 'Dumbbell Shoulder Press', 'Reverse Fly', 'Upright Row', 'Smith Overhead Press', 'Smith Upright Row'],
             'Traps' => ['Barbell Shrug', 'Dumbbell Shrug', 'Face Pull', 'Smith Shrug'],
-            'Biceps' => ['Barbell Curl', 'Dumbbell Curl', 'Hammer Curl', 'Preacher Curl', 'Seated Preacher Curl', 'Cable Curl', 'Smith Drag Curl'],
+            'Biceps' => ['Barbell Curl', 'Dumbbell Curl', 'Hammer Curl', 'Preacher Curl', 'Seated Preacher Curl', 'Reverse Preacher Curl', 'Seated Reverse Preacher Curl', 'Cable Curl', 'Smith Drag Curl'],
             'Triceps' => ['Cable Pushdown', 'Close-Grip Bench Press', 'Overhead Dumbbell Extension', 'Dips', 'Skull Crusher', 'Smith Close-Grip Bench Press'],
             'Forearms' => ['Wrist Curl', 'Wrist Extension', "Farmer's Walk"],
             'Abs' => ['Crunch', 'Hanging Leg Raise', 'Plank', 'Ab Wheel Rollout', 'Russian Twist'],

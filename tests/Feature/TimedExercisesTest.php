@@ -164,7 +164,7 @@ class TimedExercisesTest extends TestCase
         $this->assertSame([], $exercises['Dumbbell Curl']['secondary_categories']);
 
         // Every name on the compound list is an exercise of the catalog
-        $this->assertSame(38, $exercises->filter(fn ($exercise) => $exercise['secondary_categories'] !== [])->count());
+        $this->assertSame(41, $exercises->filter(fn ($exercise) => $exercise['secondary_categories'] !== [])->count());
     }
 
     public function test_seeders_add_the_cardio_catalog_in_minutes_and_keep_muscle_stats_to_muscles(): void
