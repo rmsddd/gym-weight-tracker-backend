@@ -8,11 +8,10 @@ use App\Http\Requests\RegisterRequest;
 use App\Http\Traits\ApiResponse;
 use App\Models\User;
 use App\Services\AuthService;
-use App\Services\EmailVerificationService;
+use App\Services\RegistrationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
@@ -21,29 +20,28 @@ class AuthController extends Controller
 
     public function __construct(
         protected AuthService $service,
-        protected EmailVerificationService $emailVerification
+        protected RegistrationService $registration
     ) {}
 
+    /** Only emails the confirmation link: the account is created when the link is opened. */
     public function register(RegisterRequest $request): JsonResponse
     {
-        $user = User::create([
-            'name' => $request->validated('name'),
-            'email' => $request->validated('email'),
-            'password' => Hash::make($request->validated('password')),
-        ]);
+        $email = $request->validated('email');
 
-        // Until they open the link, the app only shows them the "confirm your email" screen
-        $this->emailVerification->sendLink($user);
+        $sent = $this->registration->start(
+            $request->validated('name'),
+            $email,
+            $request->validated('password')
+        );
 
-        // Same as after a login: the SPA authenticates through the session, not the token
-        Auth::login($user);
+        if (! $sent) {
+            return $this->error('We could not send the confirmation email right now. Try again in a few minutes.', 503);
+        }
 
-        $tokens = $this->service->generateTokens($user);
-
-        return $this->sendResponseWithTokens(
-            $tokens,
-            ['user' => $user],
-            201
+        return $this->success(
+            ['email' => $email],
+            'We sent you a confirmation link. Open it to finish creating your account.',
+            202
         );
     }
 

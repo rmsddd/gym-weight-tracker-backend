@@ -5,7 +5,6 @@ namespace App\Providers;
 use App\Enums\TokenAbility;
 use App\Models\User;
 use Illuminate\Auth\Notifications\ResetPassword;
-use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Foundation\Events\DiagnosingHealth;
 use Illuminate\Http\Request;
@@ -53,17 +52,7 @@ class AppServiceProvider extends ServiceProvider
 
     private function pointEmailLinksAtTheFrontend(): void
     {
-        // The confirmation link stays on the API (verification.verify), which redirects to the
-        // Vue app afterwards; only the email text is set here
-        VerifyEmail::toMailUsing(function (User $user, string $url) {
-            return (new MailMessage)
-                ->subject('Confirm your email')
-                ->greeting("Hi {$user->name}!")
-                ->line('Tap the button below to confirm this is your email address.')
-                ->action('Confirm email', $url)
-                ->line('The link works for 60 minutes. If you did not create an account, you can ignore this email.');
-        });
-
+        // The sign up confirmation email is App\Notifications\ConfirmRegistration
         // The reset link opens the Vue page with the form for the new password
         ResetPassword::toMailUsing(function (User $user, string $token) {
             $url = config('app.frontend_url').'/reset-password?'.http_build_query([
@@ -103,14 +92,6 @@ class AppServiceProvider extends ServiceProvider
         // Authenticated API: generous enough for logging sets quickly, counted per user
         RateLimiter::for('api', function (Request $request) {
             return Limit::perMinute(180)->by($request->user()?->id ?: $request->ip());
-        });
-
-        // Resending the confirmation email: every send counts against the daily Brevo quota
-        RateLimiter::for('verification', function (Request $request) {
-            return [
-                Limit::perMinute(1)->by('verification-minute:'.$request->user()?->id),
-                Limit::perDay(10)->by('verification-day:'.$request->user()?->id),
-            ];
         });
     }
 

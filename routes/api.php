@@ -24,12 +24,12 @@ Route::middleware('throttle:auth')->group(function () {
     Route::post('/refresh', [AuthController::class, 'refresh']);
     Route::post('/forgot-password', [PasswordResetController::class, 'sendLink']);
     Route::post('/reset-password', [PasswordResetController::class, 'reset']);
-    // The link from the confirmation email; its signature is checked in the controller
+    // The link from the confirmation email creates the account; its signature is checked in the controller
     Route::get('/email/verify/{id}/{hash}', [EmailVerificationController::class, 'verify'])
         ->name('verification.verify');
 });
 
-// Logged in but maybe not confirmed yet: just enough to show the "confirm your email" screen
+// Every account here is confirmed: it is only created once the link in the email is opened
 Route::middleware(['auth:sanctum', 'throttle:api'])->group(function () {
 
     Route::post('/logout', [AuthController::class, 'logout']);
@@ -37,12 +37,6 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->group(function () {
     Route::get('/user', function (Request $request) {
         return $request->user();
     });
-
-    Route::post('/email/verification-notification', [EmailVerificationController::class, 'resend'])
-        ->middleware('throttle:verification');
-});
-
-Route::middleware(['auth:sanctum', 'throttle:api', 'verified'])->group(function () {
 
     Route::patch('/user/avatar', [UserAvatarController::class, 'update']);
 

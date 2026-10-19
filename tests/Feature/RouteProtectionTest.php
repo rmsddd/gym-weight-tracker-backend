@@ -22,9 +22,6 @@ class RouteProtectionTest extends TestCase
         'api/email/verify/{id}/{hash}',
     ];
 
-    /** Logged-in routes an account that has not confirmed its email may still reach. */
-    private const UNVERIFIED_API_ROUTES = ['api/logout', 'api/user', 'api/email/verification-notification'];
-
     public function test_every_api_route_except_the_auth_ones_requires_a_token(): void
     {
         $apiRoutes = collect(Route::getRoutes()->getRoutes())
@@ -46,14 +43,6 @@ class RouteProtectionTest extends TestCase
                 $middleware,
                 implode('|', $route->methods())." {$route->uri()} is reachable without logging in"
             );
-
-            if (! in_array($route->uri(), self::UNVERIFIED_API_ROUTES, true)) {
-                $this->assertContains(
-                    'verified',
-                    $middleware,
-                    implode('|', $route->methods())." {$route->uri()} is reachable without confirming the email"
-                );
-            }
         }
     }
 
