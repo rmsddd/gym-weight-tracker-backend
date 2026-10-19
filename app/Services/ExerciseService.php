@@ -14,13 +14,13 @@ class ExerciseService
 
     public function getAll(int $userId): Collection
     {
-        return Exercise::visibleTo($userId)->with('category', 'secondaryCategories')->get();
+        return Exercise::visibleTo($userId)->with('category', 'secondaryCategories')->orderBy('name')->get();
     }
 
     /** The user's own exercises they deleted, which their workout history can still be filtered by. */
     public function getDeleted(int $userId): Collection
     {
-        return Exercise::onlyTrashed()->where('user_id', $userId)->with('category', 'secondaryCategories')->get();
+        return Exercise::onlyTrashed()->where('user_id', $userId)->with('category', 'secondaryCategories')->orderBy('name')->get();
     }
 
     public function findById(int $id): Exercise
