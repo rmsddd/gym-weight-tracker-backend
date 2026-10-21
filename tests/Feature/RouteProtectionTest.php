@@ -76,6 +76,24 @@ class RouteProtectionTest extends TestCase
             ->assertJsonPath('errors.password.0', 'Enter your password.');
     }
 
+    public function test_logout_ends_the_session(): void
+    {
+        User::factory()->create(['email' => 'lifter@example.com']);
+
+        // The Vue app is a stateful origin: it is authenticated by the session cookie, not a token
+        $this->withHeader('Origin', 'http://localhost:5173');
+
+        $this->postJson('/api/login', ['email' => 'lifter@example.com', 'password' => 'password'])->assertOk();
+        $this->getJson('/api/user')->assertOk();
+
+        $this->postJson('/api/logout')->assertOk();
+
+        // Each request of the test shares the app, so drop the user the guard remembers from the last one
+        $this->app['auth']->forgetGuards();
+
+        $this->getJson('/api/user')->assertUnauthorized();
+    }
+
     public function test_login_is_rate_limited_after_repeated_failures(): void
     {
         User::factory()->create(['email' => 'lifter@example.com']);

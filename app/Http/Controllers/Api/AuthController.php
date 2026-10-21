@@ -103,6 +103,14 @@ class AuthController extends Controller
         // Delete all of the user's tokens
         $user->tokens()->delete();
 
+        // The Vue app is logged in through the session cookie: end the session too, or the next
+        // request is still authenticated by it
+        if ($request->hasSession()) {
+            Auth::guard('web')->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+        }
+
         return response()
             ->json([
                 'success' => true,
