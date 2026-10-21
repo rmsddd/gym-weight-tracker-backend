@@ -33,6 +33,10 @@
   the sets from the previous time each exercise was done.
 - **Stats**: personal records, workouts per month, weekly muscle groups, profile totals.
 - **Exercise catalog** seeded on deploy, re-seeded only when its seeders change.
+- **Roles and permissions** with [spatie/laravel-permission](https://github.com/spatie/laravel-permission):
+  every action is guarded by a permission, every account starts as `sportiv` (all of them ticked),
+  and the `root` account manages roles from an admin page. The permissions are listed in
+  `app/Support/PermissionCatalog.php`.
 
 ## API overview
 
@@ -49,6 +53,7 @@ a confirmed email.
 | Last time | `GET workouts/{id}/previous-sets` |
 | Templates | `workout-templates` (index, store, show, destroy) |
 | Stats | `GET personal-records`, `monthly-stats`, `muscle-stats`, `profile-stats` |
+| Admin (root only) | `GET admin/permissions`, `admin/roles` (index, store, update, destroy), `PUT admin/roles/{id}/permissions`, `GET admin/users`, `PUT admin/users/{id}/role` |
 
 `php artisan route:list --path=api` prints the full list.
 
@@ -64,6 +69,14 @@ php artisan key:generate
 php artisan migrate
 php artisan catalog:seed
 php artisan serve
+```
+
+The migrations also create the permissions and the `root` and `sportiv` roles
+(`php artisan permissions:sync` does it again after the catalog changes). To make your own account
+root, from `php artisan tinker`:
+
+```php
+App\Models\User::where('email', 'you@example.com')->first()->syncRoles('root');
 ```
 
 The API runs on `http://localhost:8000`. Start the
@@ -86,8 +99,8 @@ The `Dockerfile` builds a single image for [Render](https://render.com):
 
 1. Clones the frontend repo and runs `npm run build`.
 2. Installs Laravel on PHP 8.3 + Apache and copies the Vue build into `public/`.
-3. On start, `docker/start.sh` runs the migrations, seeds the catalog if needed and caches
-   config and routes.
+3. On start, `docker/start.sh` runs the migrations, syncs the permissions, seeds the catalog if
+   needed and caches config and routes.
 
 Push the frontend first and the backend second: the backend build picks up whatever is on the
 frontend's `main` at that moment.
