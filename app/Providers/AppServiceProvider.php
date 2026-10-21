@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Enums\TokenAbility;
 use App\Models\User;
+use App\Support\PermissionCatalog;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Foundation\Events\DiagnosingHealth;
@@ -11,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
@@ -38,6 +40,16 @@ class AppServiceProvider extends ServiceProvider
         $this->checkDatabaseOnHealthCheck();
         $this->registerBrevoMailer();
         $this->pointEmailLinksAtTheFrontend();
+        $this->letRootPassEveryPermission();
+    }
+
+    private function letRootPassEveryPermission(): void
+    {
+        // Spatie's Super-Admin, named root. Only the catalog's permissions are waved through: policy
+        // abilities such as update or delete return null here and still check who owns the record
+        Gate::before(function (User $user, string $ability) {
+            return PermissionCatalog::has($ability) && $user->hasRole(PermissionCatalog::ROOT) ? true : null;
+        });
     }
 
     private function registerBrevoMailer(): void

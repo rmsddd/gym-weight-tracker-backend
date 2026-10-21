@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\FriendshipStatus;
+use App\Support\PermissionCatalog;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -32,6 +33,12 @@ class User extends Authenticatable
     protected $attributes = [
         'avatar' => 'dino',
     ];
+
+    protected static function booted(): void
+    {
+        // Every account starts as a sportiv, however it was created (sign up, factory, tinker)
+        static::created(fn (User $user) => $user->assignRole(PermissionCatalog::DEFAULT_ROLE));
+    }
 
     /**
      * Rules for a new username, given already lowercased: it is stored and compared that way. It is
