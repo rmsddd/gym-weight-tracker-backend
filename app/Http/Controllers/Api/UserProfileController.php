@@ -16,7 +16,7 @@ class UserProfileController extends Controller
         $user = $request->user();
         $this->authorize('updateName', $user);
 
-        return $this->service->updateName($user, $request->validated('name'));
+        return $this->service->updateName($user, $request->validated('name'))->toCurrentUserArray();
     }
 
     /** Only for an account that has none yet: once chosen, a username never changes. */
@@ -25,6 +25,6 @@ class UserProfileController extends Controller
         $user = $request->user();
         $this->authorize('setUsername', $user);
 
-        return $this->service->setUsername($user, $request->validated('username'));
+        return $this->service->setUsername($user, $request->validated('username'))->toCurrentUserArray();
     }
 }

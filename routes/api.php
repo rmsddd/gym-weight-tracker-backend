@@ -38,7 +38,7 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
 
     Route::get('/user', function (Request $request) {
-        return $request->user();
+        return $request->user()->toCurrentUserArray();
     });
 
     Route::patch('/user/avatar', [UserAvatarController::class, 'update']);

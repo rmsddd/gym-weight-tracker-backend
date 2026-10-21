@@ -87,6 +87,22 @@ class User extends Authenticatable
         ];
     }
 
+    /**
+     * The logged-in user as the app sees itself: the usual fields plus its role and what it may do,
+     * so the app can hide what is not allowed. Not appended to toArray(), where Spatie's permissions
+     * relation already uses the name.
+     */
+    public function toCurrentUserArray(): array
+    {
+        $isRoot = $this->hasRole(PermissionCatalog::ROOT);
+
+        return [
+            ...$this->toArray(),
+            'role' => $this->getRoleNames()->first(),
+            'permissions' => $isRoot ? PermissionCatalog::names() : $this->getAllPermissions()->pluck('name')->values()->all(),
+        ];
+    }
+
     public function workouts(): HasMany
     {
         return $this->hasMany(Workout::class);

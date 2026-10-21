@@ -16,6 +16,6 @@ class UserAvatarController extends Controller
         $user = $request->user();
         $this->authorize('updateAvatar', $user);
 
-        return $this->service->updateAvatar($user, Avatar::from($request->validated('avatar')));
+        return $this->service->updateAvatar($user, Avatar::from($request->validated('avatar')))->toCurrentUserArray();
     }
 }

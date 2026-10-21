@@ -71,7 +71,7 @@ class AuthController extends Controller
 
         return $this->sendResponseWithTokens(
             $tokens,
-            ['user' => $user]
+            ['user' => $user->toCurrentUserArray()]
         );
     }
 
