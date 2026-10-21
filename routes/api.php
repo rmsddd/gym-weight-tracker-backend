@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Api\Admin\RoleController;
+use App\Http\Controllers\Api\Admin\UserRoleController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\EmailVerificationController;
@@ -18,6 +20,7 @@ use App\Http\Controllers\Api\WorkoutExerciseController;
 use App\Http\Controllers\Api\WorkoutSetController;
 use App\Http\Controllers\Api\WorkoutTemplateController;
 use App\Http\Middleware\EnsureUserHasUsername;
+use App\Http\Middleware\EnsureUserIsRoot;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -55,6 +58,15 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->group(function () {
         Route::post('friend-requests', [FriendController::class, 'sendRequest']);
         Route::post('friend-requests/{friendship}/accept', [FriendController::class, 'acceptRequest']);
         Route::delete('friend-requests/{friendship}', [FriendController::class, 'deleteRequest']);
+    });
+
+    // The root page: roles, what each may do, and who has which
+    Route::prefix('admin')->middleware(EnsureUserIsRoot::class)->group(function () {
+        Route::get('permissions', [RoleController::class, 'permissions']);
+        Route::apiResource('roles', RoleController::class)->except('show');
+        Route::put('roles/{role}/permissions', [RoleController::class, 'updatePermissions']);
+        Route::get('users', [UserRoleController::class, 'index']);
+        Route::put('users/{user}/role', [UserRoleController::class, 'update']);
     });
 
     Route::apiResource('exercises', ExerciseController::class);
