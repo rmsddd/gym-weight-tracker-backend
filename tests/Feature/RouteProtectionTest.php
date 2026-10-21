@@ -3,9 +3,11 @@
 namespace Tests\Feature;
 
 use App\Models\User;
+use App\Support\PermissionCatalog;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Routing\Route as RoutingRoute;
 use Illuminate\Support\Facades\Route;
+use Tests\Support\GuardedRoutes;
 use Tests\TestCase;
 
 class RouteProtectionTest extends TestCase
@@ -44,6 +46,28 @@ class RouteProtectionTest extends TestCase
                 implode('|', $route->methods())." {$route->uri()} is reachable without logging in"
             );
         }
+    }
+
+    public function test_every_logged_in_route_is_guarded_by_a_permission(): void
+    {
+        $routes = collect(Route::getRoutes()->getRoutes())
+            ->filter(fn (RoutingRoute $route) => in_array('auth:sanctum', $route->gatherMiddleware(), true))
+            // The admin API is root's alone, behind its own middleware
+            ->reject(fn (RoutingRoute $route) => str_starts_with($route->uri(), 'api/admin'))
+            ->map(fn (RoutingRoute $route) => "{$route->methods()[0]} {$route->uri()}");
+
+        $known = [...array_keys(GuardedRoutes::all()), ...GuardedRoutes::UNGUARDED];
+
+        foreach ($routes as $route) {
+            $this->assertContains($route, $known, "{$route} has no permission in Tests\\Support\\GuardedRoutes");
+        }
+
+        // And the list holds no route that no longer exists, nor a permission that guards nothing
+        $this->assertEqualsCanonicalizing($routes->values()->all(), $known);
+        $this->assertEqualsCanonicalizing(
+            PermissionCatalog::names(),
+            array_values(array_unique(array_column(GuardedRoutes::all(), 0)))
+        );
     }
 
     public function test_guests_get_401_from_protected_routes(): void
