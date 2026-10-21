@@ -14,7 +14,8 @@ class ProfileStatsController extends Controller
     public function show()
     {
         // Totals are derived from the caller's own workouts only
-        $this->authorize('viewAny', Workout::class);
+        $this->authorize('viewStats', Workout::class);
+
         return new ProfileStatsResource($this->service->getForUser(auth()->id()));
     }
 }

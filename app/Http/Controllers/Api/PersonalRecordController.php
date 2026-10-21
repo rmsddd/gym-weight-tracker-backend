@@ -14,7 +14,8 @@ class PersonalRecordController extends Controller
     public function index()
     {
         // Records are derived from the caller's own workouts only
-        $this->authorize('viewAny', Workout::class);
+        $this->authorize('viewStats', Workout::class);
+
         return PersonalRecordResource::collection($this->service->getForUser(auth()->id()));
     }
 }

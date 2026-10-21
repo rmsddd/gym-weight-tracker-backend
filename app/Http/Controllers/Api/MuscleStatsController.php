@@ -14,7 +14,8 @@ class MuscleStatsController extends Controller
     public function index()
     {
         // Stats are derived from the caller's own workouts only
-        $this->authorize('viewAny', Workout::class);
+        $this->authorize('viewStats', Workout::class);
+
         return MuscleStatResource::collection($this->service->getForUser(auth()->id()));
     }
 }

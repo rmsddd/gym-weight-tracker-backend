@@ -21,6 +21,7 @@ class FriendController extends Controller
 
     public function search(Request $request)
     {
+        $this->authorize('searchUsers', User::class);
         $query = $request->validate(['q' => 'required|string|min:2|max:20'])['q'];
 
         return UserSearchResultResource::collection($this->service->search($request->user(), $query));
@@ -28,6 +29,8 @@ class FriendController extends Controller
 
     public function index(Request $request)
     {
+        $this->authorize('viewFriends', User::class);
+
         return FriendResource::collection($this->service->friends($request->user()));
     }
 
@@ -47,6 +50,7 @@ class FriendController extends Controller
 
     public function destroy(Request $request, User $user)
     {
+        $this->authorize('removeFriend', User::class);
         $friendship = $this->service->friendshipWith($request->user(), $user);
         abort_if($friendship?->status !== FriendshipStatus::Accepted, 404);
         $this->service->remove($friendship);
@@ -56,6 +60,7 @@ class FriendController extends Controller
 
     public function requests(Request $request)
     {
+        $this->authorize('viewFriendRequests', User::class);
         $pending = $this->service->pendingRequests($request->user());
 
         return response()->json(['data' => [
@@ -66,6 +71,7 @@ class FriendController extends Controller
 
     public function sendRequest(StoreFriendRequestRequest $request)
     {
+        $this->authorize('sendFriendRequest', User::class);
         $other = User::findOrFail($request->validated('user_id'));
         abort_if($other->username === null, 404);
 

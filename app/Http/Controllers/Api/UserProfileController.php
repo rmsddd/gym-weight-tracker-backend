@@ -14,7 +14,7 @@ class UserProfileController extends Controller
     public function updateName(UpdateNameRequest $request)
     {
         $user = $request->user();
-        $this->authorize('update', $user);
+        $this->authorize('updateName', $user);
 
         return $this->service->updateName($user, $request->validated('name'));
     }

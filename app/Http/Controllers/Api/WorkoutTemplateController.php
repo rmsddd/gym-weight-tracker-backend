@@ -17,6 +17,7 @@ class WorkoutTemplateController extends Controller
     public function index()
     {
         $this->authorize('viewAny', WorkoutTemplate::class);
+
         return WorkoutTemplateResource::collection($this->service->getAll(auth()->id()));
     }
 
@@ -25,20 +26,22 @@ class WorkoutTemplateController extends Controller
         $this->authorize('create', WorkoutTemplate::class);
         $data = $request->validated();
         $template = $this->service->create($request->user()->id, $data['name'], $data['exercise_ids']);
+
         return new WorkoutTemplateResource($template);
     }
 
     public function show(WorkoutTemplate $template)
     {
         $this->authorize('view', $template);
+
         return new WorkoutTemplateResource($template->load('exercises.exercise.category'));
     }
 
     public function fromWorkout(SaveWorkoutAsTemplateRequest $request, Workout $workout)
     {
-        $this->authorize('view', $workout);
-        $this->authorize('create', WorkoutTemplate::class);
+        $this->authorize('createFromWorkout', [WorkoutTemplate::class, $workout]);
         $template = $this->service->createFromWorkout($workout, $request->validated()['name']);
+
         return new WorkoutTemplateResource($template);
     }
 
@@ -46,6 +49,7 @@ class WorkoutTemplateController extends Controller
     {
         $this->authorize('delete', $template);
         $this->service->delete($template);
+
         return response()->json(null, 204);
     }
 }
