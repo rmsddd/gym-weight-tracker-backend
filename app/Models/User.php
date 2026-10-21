@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Collection;
+use Illuminate\Validation\Rule;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 
@@ -46,8 +47,14 @@ class User extends Authenticatable
      */
     public static function usernameRules(): array
     {
-        return ['required', 'string', 'min:3', 'max:20', 'regex:/^[a-z0-9._]+$/', 'unique:users,username'];
+        return [
+            'required', 'string', 'min:3', 'max:20', 'regex:/^[a-z0-9._]+$/', 'unique:users,username',
+            Rule::notIn(self::RESERVED_USERNAMES),
+        ];
     }
+
+    /** Usernames nobody can choose: root belongs to the app's own root account, made from tinker. */
+    public const RESERVED_USERNAMES = ['root'];
 
     /** The same wording wherever a username is chosen: on sign up and on the "choose one" page. */
     public static function usernameMessages(): array
@@ -58,6 +65,7 @@ class User extends Authenticatable
             'username.max' => 'A username has at most 20 characters.',
             'username.regex' => 'Use only letters, digits, dots and underscores.',
             'username.unique' => 'This username is taken.',
+            'username.not_in' => 'This username is taken.',
         ];
     }
 

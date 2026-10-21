@@ -89,6 +89,21 @@ class RolesTest extends TestCase
             ->assertJsonCount(count(PermissionCatalog::names()), 'permissions');
     }
 
+    public function test_nobody_can_sign_up_or_choose_the_username_root(): void
+    {
+        $this->postJson('/api/register', [
+            'name' => 'Sneaky',
+            'username' => 'ROOT',
+            'email' => 'sneaky@example.com',
+            'password' => 'password123',
+            'password_confirmation' => 'password123',
+        ])->assertJsonValidationErrors(['username' => 'This username is taken.']);
+
+        Sanctum::actingAs(User::factory()->create(['username' => null]));
+        $this->patchJson('/api/user/username', ['username' => 'root'])
+            ->assertJsonValidationErrors(['username' => 'This username is taken.']);
+    }
+
     public function test_a_sportiv_without_a_permission_is_refused_it(): void
     {
         Role::findByName(PermissionCatalog::DEFAULT_ROLE, 'web')->revokePermissionTo('workouts.delete');

@@ -48,14 +48,20 @@ class AuthController extends Controller
 
     public function login(LoginRequest $request): JsonResponse
     {
-        $credentials = $request->validated();
+        // The email field also takes a username (root has no real email); usernames are stored lowercased
+        $login = $request->validated('email');
+        $field = str_contains($login, '@') ? 'email' : 'username';
+        $credentials = [
+            $field => $field === 'username' ? mb_strtolower($login) : $login,
+            'password' => $request->validated('password'),
+        ];
 
         if (! Auth::attempt($credentials)) {
-            // Say which field is wrong; registering already reveals whether an email is taken
+            // Say which field is wrong; registering already reveals whether an email or username is taken
             throw ValidationException::withMessages(
-                User::where('email', $credentials['email'])->exists()
+                User::where($field, $credentials[$field])->exists()
                     ? ['password' => ['Incorrect password.']]
-                    : ['email' => ['No account uses this email.']]
+                    : ['email' => [$field === 'email' ? 'No account uses this email.' : 'No account uses this username.']]
             );
         }
 

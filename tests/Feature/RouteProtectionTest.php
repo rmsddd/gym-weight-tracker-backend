@@ -94,10 +94,29 @@ class RouteProtectionTest extends TestCase
             ->assertJsonPath('errors.password.0', 'Incorrect password.')
             ->assertJsonMissingPath('errors.email');
 
-        $this->postJson('/api/login', ['email' => 'not-an-email', 'password' => ''])
+        $this->postJson('/api/login', ['email' => '', 'password' => ''])
             ->assertUnprocessable()
-            ->assertJsonPath('errors.email.0', 'Enter a valid email address, like name@example.com.')
+            ->assertJsonPath('errors.email.0', 'Enter your email or username.')
             ->assertJsonPath('errors.password.0', 'Enter your password.');
+
+        $this->postJson('/api/login', ['email' => 'nobody', 'password' => 'whatever'])
+            ->assertUnprocessable()
+            ->assertJsonPath('errors.email.0', 'No account uses this username.');
+    }
+
+    public function test_login_also_takes_the_username(): void
+    {
+        User::factory()->create(['username' => 'root', 'email' => 'root@example.test']);
+        // Logging in starts a session, which only the Vue app's stateful origin gets
+        $this->withHeader('Origin', 'http://localhost:5173');
+
+        $this->postJson('/api/login', ['email' => 'Root', 'password' => 'wrong-password'])
+            ->assertUnprocessable()
+            ->assertJsonPath('errors.password.0', 'Incorrect password.');
+
+        $this->postJson('/api/login', ['email' => 'Root', 'password' => 'password'])
+            ->assertOk()
+            ->assertJsonPath('data.user.username', 'root');
     }
 
     public function test_logout_ends_the_session(): void
