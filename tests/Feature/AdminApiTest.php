@@ -174,6 +174,11 @@ class AdminApiTest extends TestCase
 
         $this->getJson('/api/admin/users?search=bogdan@example')->assertJsonCount(1, 'data');
 
+        $this->getJson('/api/admin/users?role=root')
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.name', 'Root');
+        $this->getJson('/api/admin/users?role=nope')->assertJsonValidationErrors('role');
+
         $this->getJson('/api/admin/users')
             ->assertJsonCount(3, 'data')
             ->assertJsonPath('meta.per_page', 20)

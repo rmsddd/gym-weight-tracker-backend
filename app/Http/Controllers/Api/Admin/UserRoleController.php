@@ -17,9 +17,14 @@ class UserRoleController extends Controller
 
     public function index(Request $request)
     {
-        $search = $request->validate(['search' => 'nullable|string|max:100'])['search'] ?? null;
+        $filters = $request->validate([
+            'search' => 'nullable|string|max:100',
+            'role' => 'nullable|string|exists:roles,name',
+        ]);
+        $search = $filters['search'] ?? null;
 
         $users = User::with('roles')
+            ->when($filters['role'] ?? null, fn ($query, $role) => $query->role($role))
             ->when($search, fn ($query) => $query->where(fn ($query) => $query
                 ->where('name', 'like', "%{$search}%")
                 ->orWhere('username', 'like', "%{$search}%")
