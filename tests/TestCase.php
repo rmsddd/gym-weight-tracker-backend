@@ -3,8 +3,15 @@
 namespace Tests;
 
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
+use Spatie\Permission\PermissionRegistrar;
 
 abstract class TestCase extends BaseTestCase
 {
-    //
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // The roles and permissions come from a migration; start each test without a stale cache of them
+        $this->app->make(PermissionRegistrar::class)->forgetCachedPermissions();
+    }
 }

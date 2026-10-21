@@ -20,6 +20,8 @@ until php artisan migrate --force; do
     attempt=$((attempt + 1))
     sleep 6
 done
+# Permisiunile din cod si rolurile root si sportiv; ruleaza la fiecare deploy, e rapid
+php artisan permissions:sync
 # Categoriile si exercitiile de baza; ruleaza seederele doar cand fisierele lor s-au schimbat de la ultimul deploy
 php artisan catalog:seed
 php artisan config:cache

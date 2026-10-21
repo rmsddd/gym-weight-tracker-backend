@@ -110,8 +110,8 @@ class TemplatesHistoryPreviousSetsTest extends TestCase
         $this->workoutWithSet(User::factory()->create(), $bench, '2026-10-01', 200, 1); // someone else's
 
         $this->getJson('/api/workouts?finished=1')->assertOk()->assertJsonCount(3, 'data');
-        $this->getJson('/api/workouts?exercise_id=' . $bench->id)->assertJsonCount(2, 'data');
-        $this->getJson('/api/workouts?category_id=' . $squat->category_id)->assertJsonCount(1, 'data');
+        $this->getJson('/api/workouts?exercise_id='.$bench->id)->assertJsonCount(2, 'data');
+        $this->getJson('/api/workouts?category_id='.$squat->category_id)->assertJsonCount(1, 'data');
         $this->getJson('/api/workouts?from=2026-09-10&to=2026-09-30')->assertJsonCount(1, 'data');
 
         $this->getJson('/api/workouts?finished=1&include=exercises')

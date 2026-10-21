@@ -5,8 +5,10 @@ namespace Tests\Feature;
 use App\Models\Category;
 use App\Models\Exercise;
 use App\Models\Friendship;
+use App\Models\PendingRegistration;
 use App\Models\User;
 use App\Models\Workout;
+use App\Services\RegistrationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
@@ -264,8 +266,8 @@ class FriendsTest extends TestCase
         ])->assertStatus(202);
         $this->assertDatabaseHas('pending_registrations', ['email' => 'a@example.com', 'username' => 'lifter']);
 
-        $service = app(\App\Services\RegistrationService::class);
-        $pending = \App\Models\PendingRegistration::first();
+        $service = app(RegistrationService::class);
+        $pending = PendingRegistration::first();
         User::factory()->create(['username' => 'lifter']);
 
         $this->assertTrue($service->confirm($pending->id, sha1('a@example.com')));
