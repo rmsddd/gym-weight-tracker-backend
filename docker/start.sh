@@ -22,6 +22,8 @@ until php artisan migrate --force; do
 done
 # Permisiunile din cod si rolurile root si sportiv; ruleaza la fiecare deploy, e rapid
 php artisan permissions:sync
+# Contul root, cu parola din ROOT_PASSWORD; il creeaza doar daca nu exista, parola nu o schimba
+php artisan root:ensure
 # Categoriile si exercitiile de baza; ruleaza seederele doar cand fisierele lor s-au schimbat de la ultimul deploy
 php artisan catalog:seed
 php artisan config:cache

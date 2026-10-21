@@ -72,12 +72,10 @@ php artisan serve
 ```
 
 The migrations also create the permissions and the `root` and `sportiv` roles
-(`php artisan permissions:sync` does it again after the catalog changes). To make your own account
-root, from `php artisan tinker`:
-
-```php
-App\Models\User::where('email', 'you@example.com')->first()->syncRoles('root');
-```
+(`php artisan permissions:sync` does it again after the catalog changes). The root account logs
+in with the username `root`: set `ROOT_PASSWORD` in `.env` and run `php artisan root:ensure`, which
+creates it if it does not exist yet (it never changes the password of an existing one). Nobody can
+sign up with the username `root`.
 
 The API runs on `http://localhost:8000`. Start the
 [frontend](https://github.com/rmsddd/gym-weight-tracker-frontend) with `npm run dev`; it expects
@@ -99,7 +97,8 @@ The `Dockerfile` builds a single image for [Render](https://render.com):
 
 1. Clones the frontend repo and runs `npm run build`.
 2. Installs Laravel on PHP 8.3 + Apache and copies the Vue build into `public/`.
-3. On start, `docker/start.sh` runs the migrations, syncs the permissions, seeds the catalog if
+3. On start, `docker/start.sh` runs the migrations, syncs the permissions, creates the root
+   account from `ROOT_PASSWORD` if it is missing, seeds the catalog if
    needed and caches config and routes.
 
 Push the frontend first and the backend second: the backend build picks up whatever is on the

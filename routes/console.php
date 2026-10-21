@@ -65,3 +65,26 @@ Artisan::command('permissions:sync', function () {
 
     $this->info('Permissions and roles are in sync with the catalog.');
 })->purpose('Make the permissions and the root and sportiv roles match the permission catalog');
+
+Artisan::command('root:ensure', function () {
+    $password = config('app.root_password');
+
+    if (blank($password)) {
+        $this->info('ROOT_PASSWORD is not set, no root account to create.');
+
+        return;
+    }
+
+    // Only ever creates it: a root account that already exists keeps the password it has
+    $root = User::where('username', 'root')->first() ?? User::forceCreate([
+        'name' => 'Root',
+        'username' => 'root',
+        'email' => 'root@gym-weight-tracker.local',
+        'password' => $password,
+        'email_verified_at' => now(),
+    ]);
+
+    $root->syncRoles(PermissionCatalog::ROOT);
+
+    $this->info($root->wasRecentlyCreated ? 'Root account created.' : 'Root account already exists.');
+})->purpose('Create the root account from ROOT_PASSWORD if it does not exist yet');

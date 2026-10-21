@@ -58,6 +58,10 @@ return [
     // In production Laravel serves the Vue build itself, so it is the same as APP_URL.
     'frontend_url' => env('FRONTEND_URL', env('APP_URL', 'http://localhost')),
 
+    // The password the root account is created with by `root:ensure` (run on every deploy).
+    // Kept only in the environment; with none set, no root account is created.
+    'root_password' => env('ROOT_PASSWORD'),
+
     /*
     |--------------------------------------------------------------------------
     | Application Timezone
