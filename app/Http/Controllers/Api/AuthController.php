@@ -30,6 +30,7 @@ class AuthController extends Controller
 
         $sent = $this->registration->start(
             $request->validated('name'),
+            $request->validated('username'),
             $email,
             $request->validated('password')
         );

@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\EmailVerificationController;
 use App\Http\Controllers\Api\ExerciseController;
+use App\Http\Controllers\Api\FriendController;
 use App\Http\Controllers\Api\MonthlyStatsController;
 use App\Http\Controllers\Api\MuscleStatsController;
 use App\Http\Controllers\Api\PasswordResetController;
@@ -11,10 +12,12 @@ use App\Http\Controllers\Api\PersonalRecordController;
 use App\Http\Controllers\Api\PreviousSetsController;
 use App\Http\Controllers\Api\ProfileStatsController;
 use App\Http\Controllers\Api\UserAvatarController;
+use App\Http\Controllers\Api\UserProfileController;
 use App\Http\Controllers\Api\WorkoutController;
 use App\Http\Controllers\Api\WorkoutExerciseController;
 use App\Http\Controllers\Api\WorkoutSetController;
 use App\Http\Controllers\Api\WorkoutTemplateController;
+use App\Http\Middleware\EnsureUserHasUsername;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -39,6 +42,20 @@ Route::middleware(['auth:sanctum', 'throttle:api'])->group(function () {
     });
 
     Route::patch('/user/avatar', [UserAvatarController::class, 'update']);
+    Route::patch('/user/name', [UserProfileController::class, 'updateName']);
+    Route::patch('/user/username', [UserProfileController::class, 'setUsername']);
+
+    // Friends find each other by username, so these wait until the account has one
+    Route::middleware(EnsureUserHasUsername::class)->group(function () {
+        Route::get('users/search', [FriendController::class, 'search']);
+        Route::get('friends', [FriendController::class, 'index']);
+        Route::get('friends/{user:username}', [FriendController::class, 'show']);
+        Route::delete('friends/{user:username}', [FriendController::class, 'destroy']);
+        Route::get('friend-requests', [FriendController::class, 'requests']);
+        Route::post('friend-requests', [FriendController::class, 'sendRequest']);
+        Route::post('friend-requests/{friendship}/accept', [FriendController::class, 'acceptRequest']);
+        Route::delete('friend-requests/{friendship}', [FriendController::class, 'deleteRequest']);
+    });
 
     Route::apiResource('exercises', ExerciseController::class);
     Route::apiResource('categories', CategoryController::class);

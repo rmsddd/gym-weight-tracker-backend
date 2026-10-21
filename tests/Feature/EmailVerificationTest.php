@@ -20,6 +20,7 @@ class EmailVerificationTest extends TestCase
     {
         return $this->postJson('/api/register', [
             'name' => 'Lifter',
+            'username' => 'lifter',
             'email' => $email,
             'password' => $password,
             'password_confirmation' => $password,

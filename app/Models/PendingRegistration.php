@@ -9,6 +9,7 @@ class PendingRegistration extends Model
 {
     protected $fillable = [
         'name',
+        'username',
         'email',
         'password',
     ];

@@ -18,14 +18,14 @@ class RegistrationService
      * opened. Signing up again with the same email replaces the pending one and sends a new link.
      * Returns false when the email could not be sent, and then nothing is kept.
      */
-    public function start(string $name, string $email, string $password): bool
+    public function start(string $name, string $username, string $email, string $password): bool
     {
         // Links last an hour; whatever was never confirmed is just forgotten
         PendingRegistration::where('updated_at', '<', now()->subDay())->delete();
 
         $registration = PendingRegistration::updateOrCreate(
             ['email' => $email],
-            ['name' => $name, 'password' => Hash::make($password)]
+            ['name' => $name, 'username' => $username, 'password' => Hash::make($password)]
         );
 
         try {
@@ -55,6 +55,12 @@ class RegistrationService
                 // The password was hashed when the sign up was kept; the hashed cast leaves it as is
                 $user = User::forceCreate([
                     'name' => $registration->name,
+                    // Someone else may have confirmed with the same username in the meantime: this
+                    // account then gets none and is asked to choose one at its first login
+                    'username' => $registration->username !== null
+                        && ! User::where('username', $registration->username)->exists()
+                        ? $registration->username
+                        : null,
                     'email' => $registration->email,
                     'password' => $registration->password,
                     'email_verified_at' => now(),

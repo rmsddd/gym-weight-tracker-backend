@@ -47,7 +47,8 @@ class WorkoutService
     public function resume(Workout $workout): Workout
     {
         if ($workout->finished_at !== null && $workout->completed_at === null) {
-            $workout->update(['finished_at' => null, 'duration_minutes' => null]);
+            // Friends see the time since this restart rather than since the very first start
+            $workout->update(['finished_at' => null, 'duration_minutes' => null, 'resumed_at' => now()]);
         }
         return $workout->fresh();
     }
